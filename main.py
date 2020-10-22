@@ -22,7 +22,7 @@ def get_docker_report(desired_containers):
     output = result.stdout.split(b"\n")
 
     containers = [ line.decode("utf-8").split(",") for line in output if len(line) > 0]
-    msg = ""
+    msgs = []
 
     for container in containers:
         # print("image:",container[0])
@@ -31,8 +31,9 @@ def get_docker_report(desired_containers):
         # print("status:",container[2])
 
         if container[3] in desired_containers and "Exited" in container[2]:
-            msg += "Watchdog: Container %s (image: %s) has exited %s" % ( container[3], container[0], container[2].split(") ")[-1])
+            msgs.append("Watchdog: Container %s (image: %s) has exited %s" % ( container[3], container[0], container[2].split(") ")[-1]))
 
+    msg = "\n".join(msgs)
     return msg
 
 if __name__ == "__main__":
@@ -44,7 +45,8 @@ if __name__ == "__main__":
     msg = get_docker_report(args.containers)
     print(msg)
 
-    send(args.webhook, msg)
+    if len(msg) > 0:
+        send(args.webhook, msg)
     # while(True):
     #     try:
     #         send(args.webhook, msg)
